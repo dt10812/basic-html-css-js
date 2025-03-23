@@ -3,43 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="This is a website completely made by me, dt10812">
-    <title>My website (100%) by me</title>
-    <style>
-        h1 {
-            font-size: 24px;
-            text-align: justify;
-        }
-        h2 {
-            font-size: 20px;
-            text-align: justify;
-        }
-    </style>
+    <title>EncrCoin</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="script.js"></script>
 </head>
-<body>
-    <h1>Welcome to a website that's completely made by dt10812 (me), a newbie with 4 months of experience in HTML/CSS/JS coding</h1>
-    <h2>Details about me:</h2>
-    <ul>
-       <li>Nationality: Vietnamese</li>
-       <li>Email: <a href="mailto:ducthinh100812@gmail.com">ducthinh100812@gmail.com</a></li>
-       <li>Github: <a href="https://github.com/dt10812">dt10812</a></li>
-    </ul>
+<body onload="showUserInfo()">
 
-    <button onclick="getUserInfo()">Submit Your GitHub and Gmail</button>
+    <h1>EncrCoin Secure Login</h1>
+
+    <div id="authSection">
+        <h2>Sign Up</h2>
+        <input type="email" id="signupEmail" placeholder="Enter your email">
+        <button onclick="signUp(document.getElementById('signupEmail').value)">Sign Up</button>
+
+        <h2>Login</h2>
+        <input type="email" id="loginEmail" placeholder="Enter your email">
+        <input type="text" id="loginSecretKey" placeholder="Enter your secret key">
+        <button onclick="login(document.getElementById('loginEmail').value, document.getElementById('loginSecretKey').value)">Login</button>
+    </div>
+
+    <div id="userSection" style="display: none;">
+        <h2>Dashboard</h2>
+        <p id="userInfo"></p>
+        <button onclick="logout()">Logout</button>
+    </div>
 
     <script>
-        function getUserInfo() {
-            const githubUsername = prompt('Please enter your GitHub username:');
-            const gmailAddress = prompt('Please enter your Gmail address:');
-            if (githubUsername && gmailAddress) {
-                alert(`Thank you! You've entered:\nGitHub: ${githubUsername}\nGmail: ${gmailAddress}`);
-                console.log('GitHub Username:', githubUsername);
-                console.log('Gmail Address:', gmailAddress);
-                // You can further process or store the information here
-            } else {
-                alert('Please enter both your GitHub username and Gmail address.');
-            }
+        if (isLoggedIn()) {
+            document.getElementById("authSection").style.display = "none";
+            document.getElementById("userSection").style.display = "block";
         }
     </script>
+
 </body>
 </html>
