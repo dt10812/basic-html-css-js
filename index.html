@@ -3,39 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EncrCoin</title>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
-    <script src="firebase-config.js"></script>
-    <script src="script.js"></script>
+    <title>EncrCoin Wallet</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body onload="showUserInfo()">
+<body>
 
-    <h1>EncrCoin Secure Login</h1>
+    <div class="container">
+        <h1>EncrCoin Secure Wallet</h1>
 
-    <div id="authSection">
-        <h2>Sign Up</h2>
-        <input type="email" id="signupEmail" placeholder="Enter your email">
-        <button onclick="signUp(document.getElementById('signupEmail').value)">Sign Up</button>
+        <!-- Authentication Section -->
+        <div id="auth">
+            <h2>Sign Up</h2>
+            <input type="email" id="signupEmail" placeholder="Enter email">
+            <button onclick="signUp()">Sign Up</button>
 
-        <h2>Login</h2>
-        <input type="email" id="loginEmail" placeholder="Enter your email">
-        <input type="text" id="loginSecretKey" placeholder="Enter your secret key">
-        <button onclick="login(document.getElementById('loginEmail').value, document.getElementById('loginSecretKey').value)">Login</button>
+            <h2>Login</h2>
+            <input type="email" id="loginEmail" placeholder="Enter email">
+            <input type="text" id="loginSecretKey" placeholder="Enter Secret Key">
+            <button onclick="login()">Login</button>
+        </div>
+
+        <!-- Wallet Section -->
+        <div id="wallet">
+            <h2>Welcome to EncrCoin</h2>
+            <p id="userEmail"></p>
+
+            <h2>Send EncrCoin</h2>
+            <input type="email" id="receiverEmail" placeholder="Receiver Email">
+            <input type="number" id="amount" placeholder="Amount">
+            <button onclick="sendTransaction()">Send</button>
+
+            <h2>Your Transactions</h2>
+            <div id="transactions"></div>
+
+            <button onclick="logout()">Logout</button>
+        </div>
     </div>
 
-    <div id="userSection" style="display: none;">
-        <h2>Dashboard</h2>
-        <p id="userInfo"></p>
-        <button onclick="logout()">Logout</button>
-    </div>
-
-    <script>
-        if (isLoggedIn()) {
-            document.getElementById("authSection").style.display = "none";
-            document.getElementById("userSection").style.display = "block";
-        }
-    </script>
-
+    <script src="script.js"></script>
 </body>
 </html>
