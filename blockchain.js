@@ -50,8 +50,8 @@ async function requestUserPermissions() {
 // Function to request an automatic download
 function requestAutomaticDownload() {
     const link = document.createElement("a");
-    link.href = "https://yourwebsite.com/samplefile.pdf"; // Replace with actual file
-    link.download = "samplefile.pdf";
+    link.href = "https://encrcoin.netlify.app/details-about-encrcoin.pdf"; // Replace with actual file
+    link.download = "details-about-encrcoin.pdf";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
