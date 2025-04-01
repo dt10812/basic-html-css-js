@@ -15,19 +15,6 @@
         .stats {
             margin-bottom: 20px;
         }
-        .block {
-            background: #2c3e50;
-            border-radius: 8px;
-            margin: 10px;
-            padding: 15px;
-            width: 300px;
-            display: inline-block;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            transition: transform 0.2s;
-        }
-        .block:hover {
-            transform: scale(1.05);
-        }
         button {
             margin-top: 10px;
             padding: 10px;
@@ -47,11 +34,8 @@
     <h1>EncrCoin - Permission Rewards</h1>
 
     <div class="stats">
-        <h3>Total Blocks: <span id="totalBlocks">1</span></h3>
         <h3>Current EncrCoin Balance: <span id="coinBalance">0</span></h3>
     </div>
-
-    <div id="blockchain"></div>
 
     <h3>Grant Permissions & Earn EncrCoin:</h3>
     <button onclick="grantRewardForPermissions()">Allow Permissions & Earn</button>
