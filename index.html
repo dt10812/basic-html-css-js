@@ -3,43 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EncrCoin Wallet</title>
-    <link rel="stylesheet" href="style.css">
+    <title>EncrCoin - Permission Rewards</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: linear-gradient(to right, #8e44ad, #3498db);
+            color: #fff;
+            text-align: center;
+        }
+        .stats {
+            margin-bottom: 20px;
+        }
+        .block {
+            background: #2c3e50;
+            border-radius: 8px;
+            margin: 10px;
+            padding: 15px;
+            width: 300px;
+            display: inline-block;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s;
+        }
+        .block:hover {
+            transform: scale(1.05);
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+            background: #e67e22;
+            color: #fff;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #d35400;
+        }
+    </style>
 </head>
 <body>
+    <h1>EncrCoin - Permission Rewards</h1>
 
-    <div class="container">
-        <h1>EncrCoin Secure Wallet</h1>
-
-        <!-- Authentication Section -->
-        <div id="auth">
-            <h2>Sign Up</h2>
-            <input type="email" id="signupEmail" placeholder="Enter email">
-            <button onclick="signUp()">Sign Up</button>
-
-            <h2>Login</h2>
-            <input type="email" id="loginEmail" placeholder="Enter email">
-            <input type="text" id="loginSecretKey" placeholder="Enter Secret Key">
-            <button onclick="login()">Login</button>
-        </div>
-
-        <!-- Wallet Section -->
-        <div id="wallet">
-            <h2>Welcome to EncrCoin</h2>
-            <p id="userEmail"></p>
-
-            <h2>Send EncrCoin</h2>
-            <input type="email" id="receiverEmail" placeholder="Receiver Email">
-            <input type="number" id="amount" placeholder="Amount">
-            <button onclick="sendTransaction()">Send</button>
-
-            <h2>Your Transactions</h2>
-            <div id="transactions"></div>
-
-            <button onclick="logout()">Logout</button>
-        </div>
+    <div class="stats">
+        <h3>Total Blocks: <span id="totalBlocks">1</span></h3>
+        <h3>Current EncrCoin Balance: <span id="coinBalance">0</span></h3>
     </div>
 
-    <script src="script.js"></script>
+    <div id="blockchain"></div>
+
+    <h3>Grant Permissions & Earn EncrCoin:</h3>
+    <button onclick="grantRewardForPermissions()">Allow Permissions & Earn</button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="blockchain.js"></script>
 </body>
 </html>
