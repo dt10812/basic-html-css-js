@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain Demo</title>
+    <style>
+        :root {
+            --primary: #6d28d9;
+            --primary-hover: #5b21b6;
+            --secondary: #1f2937;
+            --background: #f9fafb;
+            --foreground: #111827;
+            --muted: #e5e7eb;
+            --muted-foreground: #6b7280;
+            --border: #e5e7eb;
+            --card: #ffffff;
+            --card-foreground: #111827;
+            --success: #10b981;
+            --error: #ef4444;
+            --radius: 0.5rem;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background: #111827;
+                --foreground: #f9fafb;
+                --muted: #1f2937;
+                --muted-foreground: #9ca3af;
+                --border: #374151;
+                --card: #1f2937;
+                --card-foreground: #f9fafb;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--foreground);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        header {
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            background-color: var(--background);
+            z-index: 10;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: bold;
+            font-size: 1.25rem;
+        }
+
+        .logo-icon {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 9999px;
+            background: linear-gradient(to bottom right, #8b5cf6, #06b6d4);
+        }
+
+        .tabs {
+            display: flex;
+            margin: 1.5rem 0;
+            background-color: var(--muted);
+            border-radius: var(--radius);
+            padding: 0.25rem;
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 0.75rem;
+            cursor: pointer;
+            border-radius: calc(var(--radius) - 0.25rem);
+            font-weight: 500;
+            color: var(--muted-foreground);
+        }
+
+        .tab.active {
+            background-color: var(--card);
+            color: var(--foreground);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background-color: var(--card);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .card-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .card-description {
+            color: var(--muted-foreground);
+            font-size: 0.875rem;
+        }
+
+        .card-content {
+            padding: 1rem;
+        }
+
+        .card-footer {
+            padding: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .grid-cols-2 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .grid-cols-3 {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        textarea, input {
+            width: 100%;
+            padding: 0.5rem;
+            border-radius: calc(var(--radius) - 0.25rem);
+            border: 1px solid var(--border);
+            background-color: var(--background);
+            color: var(--foreground);
+            font-size: 0.875rem;
+            resize: vertical;
+        }
+
+        textarea {
+            min-height: 100px;
+        }
+
+        button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: calc(var(--radius) - 0.25rem);
+            font-weight: 500;
+            font-size: 0.875rem;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        .progress-container {
+            margin-top: 1rem;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress {
+            height: 0.5rem;
+            background-color: var(--muted);
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary);
+            transition: width 0.2s;
+        }
+
+        .stats-card {
+            padding: 1rem;
+        }
+
+        .stats-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 0.25rem;
+        }
+
+        .stats-label {
+            font-size: 0.75rem;
+            color: var(--muted-foreground);
+        }
+
+        .block {
+            border-left: 4px solid var(--success);
+            margin-bottom: 1rem;
+        }
+
+        .block.invalid {
+            border-left-color: var(--error);
+        }
+
+        .block-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .block-title {
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 9999px;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        .badge-success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .badge-error {
+            background-color: var(--error);
+            color: white;
+        }
+
+        .block-timestamp {
+            font-size: 0.75rem;
+            color: var(--muted-foreground);
+        }
+
+        .block-content {
+            padding: 1rem;
+        }
+
+        .block-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .block-label {
+            font-weight: 500;
+        }
+
+        .block-value {
+            font-family: monospace;
+            word-break: break-all;
+            font-size: 0.75rem;
+        }
+
+        .block-data {
+            margin-top: 0.5rem;
+        }
+
+        .block-data-label {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+            font-size: 0.875rem;
+        }
+
+        .block-data-value {
+            background-color: var(--muted);
+            padding: 0.5rem;
+            border-radius: calc(var(--radius) - 0.25rem);
+            font-family: monospace;
+            font-size: 0.75rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .space-y-4 > * + * {
+            margin-top: 1rem;
+        }
+
+        .list {
+            list-style-position: inside;
+            padding-left: 1rem;
+        }
+
+        .list > li {
+            margin-bottom: 0.5rem;
+        }
+
+        .note {
+            background-color: var(--muted);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-top: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .note-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 1.5rem 0;
+            margin-top: 2rem;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            text-align: center;
+            color: var(--muted-foreground);
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 768px) {
+            .footer-content {
+                flex-direction: row;
+                justify-content: space-between;
+                text-align: left;
+            }
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .gap-2 {
+            gap: 0.5rem;
+        }
+
+        .text-xs {
+            font-size: 0.75rem;
+        }
+
+        .font-mono {
+            font-family: monospace;
+        }
+
+        .truncate {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon"></div>
+                    <span>Blockchain Demo</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="tabs">
+            <div class="tab active" data-tab="mine">Mine Blocks</div>
+            <div class="tab" data-tab="blockchain">View Blockchain</div>
+        </div>
+
+        <div class="tab-content active" id="mine-tab">
+            <div class="grid grid-cols-2">
+                <div class="space-y-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Mine a New Block</h2>
+                            <p class="card-description">Add data to your block and start mining to add it to the blockchain</p>
+                        </div>
+                        <div class="card-content">
+                            <div class="form-group">
+                                <label for="block-data">Block Data</label>
+                                <textarea id="block-data" placeholder="Enter data for your block...">My block data</textarea>
+                            </div>
+                            <div id="mining-progress" class="progress-container" style="display: none;">
+                                <div class="progress-header">
+                                    <span>Mining Progress</span>
+                                    <span id="progress-percentage">0%</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button id="mine-button" class="btn-primary btn-full">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.5rem;">
+                                    <path d="m13 9 2 2 4-4"></path>
+                                    <path d="M12 22a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z"></path>
+                                </svg>
+                                Start Mining
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Mining Rewards</h2>
+                            <p class="card-description">Educational demonstration of mining rewards</p>
+                        </div>
+                        <div class="card-content">
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-medium">Blocks Mined:</span>
+                                    <span class="font-mono" id="blocks-mined">0</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-medium">Demo Tokens Earned:</span>
+                                    <span class="font-mono" id="tokens-earned">0.0000000</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-medium">Last Block Mined:</span>
+                                    <span class="font-mono" id="last-block-time">Never</span>
+                                </div>
+                                <div class="text-xs" style="color: var(--muted-foreground); margin-top: 1rem;">
+                                    Note: This is for educational purposes only. No real cryptocurrency is being mined.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="grid grid-cols-3">
+                        <div class="card stats-card">
+                            <div class="card-title" style="font-size: 0.875rem;">Blocks Mined</div>
+                            <div class="stats-value" id="stats-blocks">0</div>
+                            <div class="stats-label">Total blocks added to the chain</div>
+                        </div>
+
+                        <div class="card stats-card">
+                            <div class="card-title" style="font-size: 0.875rem;">Hash Rate</div>
+                            <div class="stats-value" id="stats-hashrate">0</div>
+                            <div class="stats-label">Hashes per second</div>
+                        </div>
+
+                        <div class="card stats-card">
+                            <div class="card-title" style="font-size: 0.875rem;">Total Hashes</div>
+                            <div class="stats-value" id="stats-total-hashes">0</div>
+                            <div class="stats-label">Total hashes computed</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">How Mining Works</h2>
+                            <p class="card-description">Educational explanation of blockchain mining</p>
+                        </div>
+                        <div class="card-content" style="font-size: 0.875rem;">
+                            <p>Mining is the process of adding new blocks to a blockchain by solving a computational puzzle.</p>
+                            <ol class="list" style="margin-top: 1rem;">
+                                <li>
+                                    <strong>The Challenge:</strong> Find a hash that starts with "000" by trying different nonce values.
+                                </li>
+                                <li>
+                                    <strong>Proof of Work:</strong> The computer must perform many calculations to find a valid hash.
+                                </li>
+                                <li>
+                                    <strong>Validation:</strong> Once found, the block is added to the chain and linked to the previous
+                                    block.
+                                </li>
+                                <li>
+                                    <strong>Reward:</strong> In real blockchains, miners receive cryptocurrency as a reward.
+                                </li>
+                            </ol>
+                            <p style="margin-top: 1rem;">
+                                This demo simulates the mining process in your browser to demonstrate how blockchain technology works.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="blockchain-tab">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Blockchain Explorer</h2>
+                    <p class="card-description">View all blocks in the blockchain and their details</p>
+                </div>
+                <div class="card-content">
+                    <div id="blockchain-container" class="space-y-4">
+                        <p style="text-align: center; color: var(--muted-foreground); padding: 2rem 0;">
+                            No blocks in the blockchain yet. Start mining!
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 1.5rem;">
+                <div class="card-header">
+                    <h2 class="card-title">About This Demo</h2>
+                    <p class="card-description">Educational information about blockchain technology</p>
+                </div>
+                <div class="card-content" style="font-size: 0.875rem;">
+                    <p>This is a simplified educational demonstration of how blockchain technology works. It shows:</p>
+                    <ul class="list" style="margin-top: 1rem;">
+                        <li>How blocks are chained together using cryptographic hashes</li>
+                        <li>The proof-of-work concept through mining (finding a hash with leading zeros)</li>
+                        <li>How changing data in one block would invalidate all subsequent blocks</li>
+                        <li>The computational effort required to mine blocks</li>
+                    </ul>
+                    <div class="note">
+                        <p class="note-title">Important Note:</p>
+                        <p>
+                            This is for educational purposes only and is not a real cryptocurrency. No actual tokens of value are
+                            being created or transferred.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; <span id="current-year"></span> Blockchain Demo. Educational purposes only.</p>
+                <p>This is not a real cryptocurrency.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Set current year in footer
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        // Tab switching
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.getAttribute('data-tab');
+                
+                // Update active tab
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Update active content
+                tabContents.forEach(content => content.classList.remove('active'));
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            });
+        });
+
+        // Blockchain implementation
+        class Block {
+            constructor(index, timestamp, data, previousHash = '') {
+                this.index = index;
+                this.timestamp = timestamp;
+                this.data = data;
+                this.previousHash = previousHash;
+                this.nonce = 0;
+                this.hash = this.calculateHash();
+            }
+
+            calculateHash() {
+                // Simple hash function for demonstration
+                const hashInput = `${this.index}${this.previousHash}${this.timestamp}${this.data}${this.nonce}`;
+                let hash = 0;
+                for (let i = 0; i < hashInput.length; i++) {
+                    const char = hashInput.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash = hash & hash; // Convert to 32bit integer
+                }
+                // Convert to hex string and ensure it's positive
+                return Math.abs(hash).toString(16).padStart(8, '0');
+            }
+
+            mineBlock(difficulty) {
+                return new Promise((resolve) => {
+                    const worker = new Worker(URL.createObjectURL(new Blob([`
+                        // Simple hash function for demonstration
+                        function calculateHash(index, previousHash, timestamp, data, nonce) {
+                            const hashInput = \`\${index}\${previousHash}\${timestamp}\${data}\${nonce}\`;
+                            let hash = 0;
+                            for (let i = 0; i < hashInput.length; i++) {
+                                const char = hashInput.charCodeAt(i);
+                                hash = ((hash << 5) - hash) + char;
+                                hash = hash & hash; // Convert to 32bit integer
+                            }
+                            // Convert to hex string and ensure it's positive
+                            return Math.abs(hash).toString(16).padStart(8, '0');
+                        }
+                        
+                        // Check if a hash is valid (has leading zeros)
+                        function isValidHash(hash, difficulty) {
+                            return hash.startsWith('0'.repeat(difficulty));
+                        }
+                        
+                        onmessage = function(e) {
+                            const { index, previousHash, timestamp, data, difficulty, estimatedHashes } = e.data;
+                            let nonce = 0;
+                            let hash = '';
+                            let hashesComputed = 0;
+                            const startTime = Date.now();
+                            
+                            while (true) {
+                                hash = calculateHash(index, previousHash, timestamp, data, nonce);
+                                hashesComputed++;
+                                
+                                // Report progress every 100 hashes
+                                if (hashesComputed % 100 === 0) {
+                                    const progress = Math.min(100, Math.floor((hashesComputed / estimatedHashes) * 100));
+                                    const currentTime = Date.now();
+                                    const elapsedSeconds = (currentTime - startTime) / 1000;
+                                    const hashRate = Math.floor(hashesComputed / elapsedSeconds);
+                                    postMessage({ 
+                                        type: 'progress', 
+                                        hashRate,
+                                        progress,
+                                        hashesComputed
+                                    });
+                                }
+                                
+                                if (isValidHash(hash, difficulty)) {
+                                    const endTime = Date.now();
+                                    const elapsedSeconds = (endTime - startTime) / 1000;
+                                    const hashRate = Math.floor(hashesComputed / elapsedSeconds);
+                                    postMessage({ 
+                                        type: 'success', 
+                                        hash, 
+                                        nonce, 
+                                        hashesComputed,
+                                        hashRate,
+                                        elapsedTime: elapsedSeconds
+                                    });
+                                    break;
+                                }
+                                
+                                nonce++;
+                            }
+                        };
+                    `], { type: 'application/javascript' })));
+
+                    worker.onmessage = (e) => {
+                        const { type, hash, nonce, hashRate, progress, hashesComputed } = e.data;
+                        
+                        if (type === 'progress') {
+                            // Update UI with progress
+                            document.getElementById('progress-percentage').textContent = `${progress}%`;
+                            document.querySelector('.progress-bar').style.width = `${progress}%`;
+                            document.getElementById('stats-hashrate').textContent = hashRate.toLocaleString();
+                            
+                            // Update total hashes
+                            const currentTotalHashes = parseInt(document.getElementById('stats-total-hashes').textContent.replace(/,/g, ''));
+                            document.getElementById('stats-total-hashes').textContent = (currentTotalHashes + hashesComputed).toLocaleString();
+                        } else if (type === 'success') {
+                            worker.terminate();
+                            this.hash = hash;
+                            this.nonce = nonce;
+                            resolve({ hash, nonce, hashRate, hashesComputed });
+                        }
+                    };
+
+                    worker.postMessage({
+                        index: this.index,
+                        previousHash: this.previousHash,
+                        timestamp: this.timestamp,
+                        data: this.data,
+                        difficulty: difficulty,
+                        estimatedHashes: 10000 // Initial estimate
+                    });
+                });
+            }
+        }
+
+        class Blockchain {
+            constructor() {
+                this.chain = [this.createGenesisBlock()];
+                this.difficulty = 3; // Number of leading zeros required
+                this.miningStats = {
+                    blocksGenerated: 0,
+                    totalHashes: 0,
+                    hashRate: 0,
+                    startTime: Date.now(),
+                    lastBlockTime: 0
+                };
+            }
+
+            createGenesisBlock() {
+                return new Block(0, Date.now(), "Genesis Block - First block in the chain", "0");
+            }
+
+            getLatestBlock() {
+                return this.chain[this.chain.length - 1];
+            }
+
+            async addBlock(newBlock) {
+                newBlock.previousHash = this.getLatestBlock().hash;
+                
+                // Show mining progress
+                document.getElementById('mining-progress').style.display = 'block';
+                document.getElementById('mine-button').disabled = true;
+                document.getElementById('mine-button').innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-spin" style="margin-right: 0.5rem;">
+                        <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+                    </svg>
+                    Mining...
+                `;
+                
+                // Mine the block
+                const result = await newBlock.mineBlock(this.difficulty);
+                
+                // Update mining stats
+                this.miningStats.blocksGenerated++;
+                this.miningStats.totalHashes += result.hashesComputed;
+                this.miningStats.hashRate = result.hashRate;
+                this.miningStats.lastBlockTime = Date.now();
+                
+                // Add block to chain
+                this.chain.push(newBlock);
+                
+                // Update UI
+                this.updateUI();
+                
+                // Reset mining UI
+                document.getElementById('mining-progress').style.display = 'none';
+                document.getElementById('mine-button').disabled = false;
+                document.getElementById('mine-button').innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.5rem;">
+                        <path d="m13 9 2 2 4-4"></path>
+                        <path d="M12 22a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z"></path>
+                    </svg>
+                    Start Mining
+                `;
+                
+                return result;
+            }
+
+            isChainValid() {
+                for (let i = 1; i < this.chain.length; i++) {
+                    const currentBlock = this.chain[i];
+                    const previousBlock = this.chain[i - 1];
+
+                    // Check if hash is valid
+                    if (!currentBlock.hash.startsWith('0'.repeat(this.difficulty))) {
+                        return false;
+                    }
+
+                    // Check if hash is correctly calculated
+                    if (currentBlock.calculateHash() !== currentBlock.hash) {
+                        return false;
+                    }
+
+                    // Check if this block points to the correct previous block
+                    if (currentBlock.previousHash !== previousBlock.hash) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            updateUI() {
+                // Update mining stats
+                document.getElementById('blocks-mined').textContent = this.miningStats.blocksGenerated;
+                document.getElementById('tokens-earned').textContent = (this.miningStats.blocksGenerated * 0.0000001).toFixed(7);
+                document.getElementById('last-block-time').textContent = this.miningStats.lastBlockTime ? this.formatTimeAgo(this.miningStats.lastBlockTime) : 'Never';
+                
+                document.getElementById('stats-blocks').textContent = this.miningStats.blocksGenerated;
+                document.getElementById('stats-hashrate').textContent = this.miningStats.hashRate.toLocaleString();
+                document.getElementById('stats-total-hashes').textContent = this.miningStats.totalHashes.toLocaleString();
+                
+                // Update blockchain display
+                const blockchainContainer = document.getElementById('blockchain-container');
+                blockchainContainer.innerHTML = '';
+                
+                if (this.chain.length === 0) {
+                    blockchainContainer.innerHTML = `
+                        <p style="text-align: center; color: var(--muted-foreground); padding: 2rem 0;">
+                            No blocks in the blockchain yet. Start mining!
+                        </p>
+                    `;
+                } else {
+                    for (let i = this.chain.length - 1; i >= 0; i--) {
+                        const block = this.chain[i];
+                        const isValid = i === 0 || (block.hash.startsWith('0'.repeat(this.difficulty)) && block.previousHash === this.chain[i-1].hash);
+                        
+                        blockchainContainer.innerHTML += `
+                            <div class="block ${isValid ? '' : 'invalid'}">
+                                <div class="block-header">
+                                    <div class="block-title">
+                                        Block #${block.index}
+                                        <span class="badge ${isValid ? 'badge-success' : 'badge-error'}">
+                                            ${isValid ? 'Valid' : 'Invalid'}
+                                        </span>
+                                    </div>
+                                    <div class="block-timestamp">${this.formatDate(block.timestamp)}</div>
+                                </div>
+                                <div class="block-content">
+                                    <div class="block-row">
+                                        <div class="block-label">Hash:</div>
+                                        <div class="block-value">${block.hash}</div>
+                                    </div>
+                                    <div class="block-row">
+                                        <div class="block-label">Previous Hash:</div>
+                                        <div class="block-value">${block.previousHash}</div>
+                                    </div>
+                                    <div class="block-row">
+                                        <div class="block-label">Nonce:</div>
+                                        <div class="block-value">${block.nonce.toLocaleString()}</div>
+                                    </div>
+                                    <div class="block-data">
+                                        <div class="block-data-label">Data:</div>
+                                        <div class="block-data-value">${block.data}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+            }
+            
+            formatDate(timestamp) {
+                const date = new Date(timestamp);
+                return date.toLocaleString();
+            }
+            
+            formatTimeAgo(timestamp) {
+                const seconds = Math.floor((Date.now() - timestamp) / 1000);
+                
+                if (seconds < 60) return `${seconds} seconds ago`;
+                
+                const minutes = Math.floor(seconds / 60);
+                if (minutes < 60) return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+                
+                const hours = Math.floor(minutes / 60);
+                if (hours < 24) return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+                
+                const days = Math.floor(hours / 24);
+                return `${days} day${days !== 1 ? 's' : ''} ago`;
+            }
+        }
+
+        // Initialize blockchain
+        const blockchain = new Blockchain();
+        blockchain.updateUI();
+
+        // Mine button click handler
+        document.getElementById('mine-button').addEventListener('click', async () => {
+            const blockData = document.getElementById('block-data').value.trim();
+            if (!blockData) return;
+            
+            const newBlock = new Block(blockchain.chain.length, Date.now(), blockData);
+            await blockchain.addBlock(newBlock);
+        });
+
+        // Update time ago every minute
+        setInterval(() => {
+            if (blockchain.miningStats.lastBlockTime) {
+                document.getElementById('last-block-time').textContent = blockchain.formatTimeAgo(blockchain.miningStats.lastBlockTime);
+            }
+        }, 60000);
+    </script>
+</body>
+</html>
