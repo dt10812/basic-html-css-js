@@ -4,67 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EncrCoin - Earn Cryptocurrency</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background: linear-gradient(to right, #8e44ad, #3498db);
-            color: #fff;
-            text-align: center;
-        }
-        .stats {
-            margin-bottom: 20px;
-        }
-        button {
-            margin-top: 10px;
-            padding: 10px;
-            border-radius: 8px;
-            border: none;
-            outline: none;
-            background: #e67e22;
-            color: #fff;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #d35400;
-        }
-        .checkbox-container {
-            margin-top: 20px;
-        }
-        input[type="checkbox"] {
-            margin-right: 10px;
-        }
-        .disabled-button {
-            background: gray;
-            cursor: not-allowed;
-        }
-    </style>
-</head>
-<body>
-    <h1>EncrCoin - Earn Cryptocurrency</h1>
-
-    <div class="stats">
-        <h3>Current EncrCoin Balance: <span id="coinBalance">0</span></h3>
-    </div>
-
-    <div class="checkbox-container">
-        <input type="checkbox" id="tosCheckbox">
-        <label for="tosCheckbox">
-            I agree to the <a href="tos.html">Terms of Service</a> and <a href="privacy.html">Privacy Policy</a>.
-        </label>
-    </div>
-
-    <h3>Grant Permissions & Earn EncrCoin:</h3>
-    <button id="earnButton" class="disabled-button" disabled onclick="grantRewardForPermissions()">Allow Permissions & Earn</button>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <script src="blockchain.js"></script>
-    <script>
-        document.getElementById("tosCheckbox").addEventListener("change", function() {
-            const earnButton = document.getElementById("earnButton");
-            earnButton.disabled = !this.checked;
-            earnButton.classList.toggle("disabled-button", !this.checked);
-        });
-    </script>
-</body>
+    <script type="module" src="https://encrcoin.vercel.app/blockchain-demo/app/page.tsx"
+<head>
 </html>
