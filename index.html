@@ -473,6 +473,96 @@
             font-size: 0.75rem;
             margin-top: 0.5rem;
         }
+
+        .wallet-card {
+            background-color: var(--card);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .wallet-balance {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+
+        .wallet-address {
+            font-family: monospace;
+            font-size: 0.75rem;
+            background-color: var(--muted);
+            padding: 0.5rem;
+            border-radius: calc(var(--radius) - 0.25rem);
+            word-break: break-all;
+        }
+
+        .transaction-form {
+            margin-top: 1rem;
+        }
+
+        .transaction-code {
+            font-family: monospace;
+            font-size: 0.75rem;
+            background-color: var(--muted);
+            padding: 0.5rem;
+            border-radius: calc(var(--radius) - 0.25rem);
+            word-break: break-all;
+            margin-top: 0.5rem;
+        }
+
+        .transaction-history {
+            margin-top: 1rem;
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .transaction-amount {
+            font-weight: bold;
+        }
+
+        .transaction-amount.positive {
+            color: var(--success);
+        }
+
+        .transaction-amount.negative {
+            color: var(--error);
+        }
+
+        .transaction-date {
+            font-size: 0.75rem;
+            color: var(--muted-foreground);
+        }
+
+        .copy-button {
+            background-color: var(--muted);
+            color: var(--foreground);
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+            cursor: pointer;
+        }
+
+        .copy-button:hover {
+            background-color: var(--border);
+        }
+
+        .success-message {
+            color: var(--success);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        .error-message {
+            color: var(--error);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
     </style>
 </head>
 <body>
@@ -491,6 +581,7 @@
         <div class="tabs">
             <div class="tab active" data-tab="mine">Mine Blocks</div>
             <div class="tab" data-tab="blockchain">View Blockchain</div>
+            <div class="tab" data-tab="wallet">Wallet</div>
         </div>
 
         <div class="tab-content active" id="mine-tab">
@@ -557,7 +648,7 @@
                                     <span class="font-mono" id="blocks-mined">0</span>
                                 </div>
                                 <div class="flex items-center justify-between">
-                                    <span class="text-sm font-medium">Demo Tokens Earned:</span>
+                                    <span class="text-sm font-medium">EncrCoins Earned:</span>
                                     <span class="font-mono" id="tokens-earned">0.0000000</span>
                                 </div>
                                 <div class="flex items-center justify-between">
@@ -658,6 +749,107 @@
                             This is for educational purposes only and is not a real cryptocurrency. No actual tokens of value are
                             being created or transferred.
                         </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="wallet-tab">
+            <div class="grid grid-cols-2">
+                <div class="space-y-4">
+                    <div class="wallet-card">
+                        <h2 class="card-title">Your EncrCoin Wallet</h2>
+                        <p class="card-description">Your current balance and wallet address</p>
+                        <div class="wallet-balance" id="wallet-balance">0.0000000</div>
+                        <p class="text-xs">EncrCoins</p>
+                        <div class="wallet-address" id="wallet-address">Generating wallet address...</div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Send EncrCoins</h2>
+                            <p class="card-description">Generate a transaction code to send EncrCoins</p>
+                        </div>
+                        <div class="card-content">
+                            <div class="transaction-form">
+                                <div class="form-group">
+                                    <label for="send-amount">Amount to Send</label>
+                                    <input type="number" id="send-amount" min="0.0000001" step="0.0000001" placeholder="0.0000001">
+                                </div>
+                                <button id="generate-code-button" class="btn-primary btn-full">Generate Transaction Code</button>
+                                <div id="transaction-code-container" style="display: none;">
+                                    <p style="margin-top: 1rem; font-weight: 500;">Transaction Code:</p>
+                                    <div class="transaction-code" id="transaction-code"></div>
+                                    <div style="display: flex; justify-content: flex-end; margin-top: 0.5rem;">
+                                        <button id="copy-code-button" class="copy-button">Copy Code</button>
+                                    </div>
+                                </div>
+                                <div id="send-message" class="success-message" style="display: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Redeem EncrCoins</h2>
+                            <p class="card-description">Enter a transaction code to receive EncrCoins</p>
+                        </div>
+                        <div class="card-content">
+                            <div class="transaction-form">
+                                <div class="form-group">
+                                    <label for="redeem-code">Transaction Code</label>
+                                    <input type="text" id="redeem-code" placeholder="Enter transaction code">
+                                </div>
+                                <button id="redeem-code-button" class="btn-primary btn-full">Redeem EncrCoins</button>
+                                <div id="redeem-message" class="success-message" style="display: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Transaction History</h2>
+                            <p class="card-description">Your recent EncrCoin transactions</p>
+                        </div>
+                        <div class="card-content">
+                            <div id="transaction-history" class="transaction-history">
+                                <p style="text-align: center; color: var(--muted-foreground); padding: 1rem 0;">
+                                    No transactions yet.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">About EncrCoin Transactions</h2>
+                            <p class="card-description">How EncrCoin transactions work</p>
+                        </div>
+                        <div class="card-content" style="font-size: 0.875rem;">
+                            <p>EncrCoin uses AES-256 encryption for secure transactions:</p>
+                            <ol class="list" style="margin-top: 1rem;">
+                                <li>
+                                    <strong>Generate a Code:</strong> When you send EncrCoins, the system generates an encrypted code.
+                                </li>
+                                <li>
+                                    <strong>Share the Code:</strong> Give this code to the recipient (or use it yourself).
+                                </li>
+                                <li>
+                                    <strong>Redeem EncrCoins:</strong> The recipient enters the code to receive the EncrCoins.
+                                </li>
+                                <li>
+                                    <strong>One-time Use:</strong> Each code can only be used once.
+                                </li>
+                            </ol>
+                            <div class="note" style="margin-top: 1rem;">
+                                <p class="note-title">Security Note:</p>
+                                <p>
+                                    This uses AES-256 encryption in CBC mode with PKCS5 padding. For educational purposes only.
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -824,6 +1016,240 @@
             }
             
             return settings;
+        }
+
+        // EncrCoin wallet and transaction functionality
+        class EncrCoinWallet {
+            constructor() {
+                this.balance = 0;
+                this.address = this.generateWalletAddress();
+                this.transactions = [];
+                this.loadFromCookies();
+            }
+
+            generateWalletAddress() {
+                // Generate a simple wallet address for demonstration
+                const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                let address = 'ENCR-';
+                for (let i = 0; i < 32; i++) {
+                    address += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                return address;
+            }
+
+            addBalance(amount) {
+                this.balance += amount;
+                this.saveToCookies();
+                this.updateUI();
+            }
+
+            deductBalance(amount) {
+                if (this.balance >= amount) {
+                    this.balance -= amount;
+                    this.saveToCookies();
+                    this.updateUI();
+                    return true;
+                }
+                return false;
+            }
+
+            addTransaction(type, amount, code = null) {
+                const transaction = {
+                    id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
+                    type: type,
+                    amount: amount,
+                    timestamp: Date.now(),
+                    code: code
+                };
+                this.transactions.unshift(transaction);
+                
+                // Keep only the last 20 transactions
+                if (this.transactions.length > 20) {
+                    this.transactions = this.transactions.slice(0, 20);
+                }
+                
+                this.saveToCookies();
+                this.updateTransactionHistory();
+            }
+
+            saveToCookies() {
+                const walletData = {
+                    balance: this.balance,
+                    address: this.address,
+                    transactions: this.transactions
+                };
+                
+                // Save wallet data to cookie (expires in 30 days)
+                const expiryDate = new Date();
+                expiryDate.setDate(expiryDate.getDate() + 30);
+                document.cookie = `encrWallet=${JSON.stringify(walletData)};expires=${expiryDate.toUTCString()};path=/`;
+            }
+
+            loadFromCookies() {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.startsWith('encrWallet=')) {
+                        try {
+                            const walletData = JSON.parse(cookie.substring('encrWallet='.length));
+                            this.balance = walletData.balance || 0;
+                            this.address = walletData.address || this.address;
+                            this.transactions = walletData.transactions || [];
+                        } catch (e) {
+                            console.error('Error parsing wallet data from cookie:', e);
+                        }
+                        break;
+                    }
+                }
+                this.updateUI();
+                this.updateTransactionHistory();
+            }
+
+            updateUI() {
+                document.getElementById('wallet-balance').textContent = this.balance.toFixed(7);
+                document.getElementById('wallet-address').textContent = this.address;
+                document.getElementById('tokens-earned').textContent = this.balance.toFixed(7);
+            }
+
+            updateTransactionHistory() {
+                const historyContainer = document.getElementById('transaction-history');
+                
+                if (this.transactions.length === 0) {
+                    historyContainer.innerHTML = `
+                        <p style="text-align: center; color: var(--muted-foreground); padding: 1rem 0;">
+                            No transactions yet.
+                        </p>
+                    `;
+                    return;
+                }
+                
+                historyContainer.innerHTML = '';
+                
+                this.transactions.forEach(tx => {
+                    const isPositive = tx.type === 'received' || tx.type === 'mined';
+                    const formattedDate = new Date(tx.timestamp).toLocaleString();
+                    
+                    historyContainer.innerHTML += `
+                        <div class="transaction-item">
+                            <div>
+                                <div>${tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}</div>
+                                <div class="transaction-date">${formattedDate}</div>
+                            </div>
+                            <div class="transaction-amount ${isPositive ? 'positive' : 'negative'}">
+                                ${isPositive ? '+' : '-'}${tx.amount.toFixed(7)}
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        // AES-256 Encryption/Decryption
+        class EncrCoinCrypto {
+            constructor() {
+                this.secretKey = "ilvencrcnandisae";
+                this.iv = "ilvencrcnandisae";
+            }
+
+            // Function to encrypt a message using AES-256
+            async encrypt(message) {
+                try {
+                    // Convert the message to an ArrayBuffer
+                    const encoder = new TextEncoder();
+                    const data = encoder.encode(message);
+                    
+                    // Import the key
+                    const key = await this.importKey();
+                    
+                    // Convert IV to ArrayBuffer
+                    const ivBuffer = encoder.encode(this.iv);
+                    
+                    // Encrypt the message
+                    const encrypted = await window.crypto.subtle.encrypt(
+                        {
+                            name: "AES-CBC",
+                            iv: ivBuffer
+                        },
+                        key,
+                        data
+                    );
+                    
+                    // Convert the encrypted data to base64
+                    return this.arrayBufferToBase64(encrypted);
+                } catch (e) {
+                    console.error('Encryption error:', e);
+                    return null;
+                }
+            }
+
+            // Function to decrypt a message using AES-256
+            async decrypt(encryptedBase64) {
+                try {
+                    // Convert the base64 to an ArrayBuffer
+                    const encryptedData = this.base64ToArrayBuffer(encryptedBase64);
+                    
+                    // Import the key
+                    const key = await this.importKey();
+                    
+                    // Convert IV to ArrayBuffer
+                    const encoder = new TextEncoder();
+                    const ivBuffer = encoder.encode(this.iv);
+                    
+                    // Decrypt the message
+                    const decrypted = await window.crypto.subtle.decrypt(
+                        {
+                            name: "AES-CBC",
+                            iv: ivBuffer
+                        },
+                        key,
+                        encryptedData
+                    );
+                    
+                    // Convert the decrypted data to a string
+                    const decoder = new TextDecoder();
+                    return decoder.decode(decrypted);
+                } catch (e) {
+                    console.error('Decryption error:', e);
+                    return null;
+                }
+            }
+
+            // Helper function to import the key
+            async importKey() {
+                const encoder = new TextEncoder();
+                const keyData = encoder.encode(this.secretKey);
+                
+                return await window.crypto.subtle.importKey(
+                    "raw",
+                    keyData,
+                    {
+                        name: "AES-CBC",
+                        length: 256
+                    },
+                    false,
+                    ["encrypt", "decrypt"]
+                );
+            }
+
+            // Helper function to convert ArrayBuffer to base64
+            arrayBufferToBase64(buffer) {
+                const bytes = new Uint8Array(buffer);
+                let binary = '';
+                for (let i = 0; i < bytes.byteLength; i++) {
+                    binary += String.fromCharCode(bytes[i]);
+                }
+                return btoa(binary);
+            }
+
+            // Helper function to convert base64 to ArrayBuffer
+            base64ToArrayBuffer(base64) {
+                const binaryString = atob(base64);
+                const bytes = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                return bytes.buffer;
+            }
         }
 
         // Blockchain implementation
@@ -1015,6 +1441,11 @@
                 // Add block to chain
                 this.chain.push(newBlock);
                 
+                // Add mining reward to wallet
+                const rewardAmount = 0.0000001;
+                wallet.addBalance(rewardAmount);
+                wallet.addTransaction('mined', rewardAmount);
+                
                 // Update UI
                 this.updateUI();
                 
@@ -1058,7 +1489,6 @@
             updateUI() {
                 // Update mining stats
                 document.getElementById('blocks-mined').textContent = this.miningStats.blocksGenerated;
-                document.getElementById('tokens-earned').textContent = (this.miningStats.blocksGenerated * 0.0000001).toFixed(7);
                 document.getElementById('last-block-time').textContent = this.miningStats.lastBlockTime ? this.formatTimeAgo(this.miningStats.lastBlockTime) : 'Never';
                 
                 document.getElementById('stats-blocks').textContent = this.miningStats.blocksGenerated;
@@ -1136,23 +1566,17 @@
             }
         }
 
-        // Initialize blockchain
+        // Initialize blockchain, wallet, and crypto
         const blockchain = new Blockchain();
+        const wallet = new EncrCoinWallet();
+        const crypto = new EncrCoinCrypto();
+        
+        // Update UI
         blockchain.updateUI();
+        wallet.updateUI();
 
-        // Monitor memory usage
-        function updateMemoryStats() {
-            if (window.performance && window.performance.memory) {
-                const memoryInfo = window.performance.memory;
-                const usedHeapSizeMB = Math.round(memoryInfo.usedJSHeapSize / (1024 * 1024));
-                currentMemoryUsage.textContent = `${usedHeapSizeMB} MB`;
-            }
-        }
-
-        // Update memory stats periodically if the browser supports it
-        if (window.performance && window.performance.memory) {
-            setInterval(updateMemoryStats, 1000);
-        }
+        // Transaction code storage
+        const usedCodes = new Set();
 
         // Mine button click handler
         document.getElementById('mine-button').addEventListener('click', async () => {
@@ -1161,6 +1585,119 @@
             
             const newBlock = new Block(blockchain.chain.length, Date.now(), blockData);
             await blockchain.addBlock(newBlock);
+        });
+
+        // Generate transaction code button click handler
+        document.getElementById('generate-code-button').addEventListener('click', async () => {
+            const amountInput = document.getElementById('send-amount');
+            const amount = parseFloat(amountInput.value);
+            
+            // Validate amount
+            if (isNaN(amount) || amount <= 0 || amount > wallet.balance) {
+                const sendMessage = document.getElementById('send-message');
+                sendMessage.textContent = 'Invalid amount. Please enter a valid amount that you have in your wallet.';
+                sendMessage.className = 'error-message';
+                sendMessage.style.display = 'block';
+                return;
+            }
+            
+            // Deduct from wallet
+            if (wallet.deductBalance(amount)) {
+                // Generate transaction message
+                const message = `Get ${amount.toFixed(7)} EncrCoin`;
+                
+                // Encrypt the message
+                const encryptedCode = await crypto.encrypt(message);
+                
+                // Display the code
+                document.getElementById('transaction-code').textContent = encryptedCode;
+                document.getElementById('transaction-code-container').style.display = 'block';
+                
+                // Add transaction to history
+                wallet.addTransaction('sent', amount, encryptedCode);
+                
+                // Show success message
+                const sendMessage = document.getElementById('send-message');
+                sendMessage.textContent = `Successfully generated transaction code for ${amount.toFixed(7)} EncrCoins.`;
+                sendMessage.className = 'success-message';
+                sendMessage.style.display = 'block';
+            } else {
+                // Show error message
+                const sendMessage = document.getElementById('send-message');
+                sendMessage.textContent = 'Insufficient balance.';
+                sendMessage.className = 'error-message';
+                sendMessage.style.display = 'block';
+            }
+        });
+
+        // Copy code button click handler
+        document.getElementById('copy-code-button').addEventListener('click', () => {
+            const code = document.getElementById('transaction-code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const copyButton = document.getElementById('copy-code-button');
+                copyButton.textContent = 'Copied!';
+                setTimeout(() => {
+                    copyButton.textContent = 'Copy Code';
+                }, 2000);
+            });
+        });
+
+        // Redeem code button click handler
+        document.getElementById('redeem-code-button').addEventListener('click', async () => {
+            const codeInput = document.getElementById('redeem-code');
+            const code = codeInput.value.trim();
+            const redeemMessage = document.getElementById('redeem-message');
+            
+            if (!code) {
+                redeemMessage.textContent = 'Please enter a transaction code.';
+                redeemMessage.className = 'error-message';
+                redeemMessage.style.display = 'block';
+                return;
+            }
+            
+            // Check if code has already been used
+            if (usedCodes.has(code)) {
+                redeemMessage.textContent = 'This code has already been redeemed.';
+                redeemMessage.className = 'error-message';
+                redeemMessage.style.display = 'block';
+                return;
+            }
+            
+            // Try to decrypt the code
+            const decryptedMessage = await crypto.decrypt(code);
+            
+            if (decryptedMessage && decryptedMessage.startsWith('Get ')) {
+                // Extract amount from message
+                const amountStr = decryptedMessage.substring(4);
+                const amount = parseFloat(amountStr);
+                
+                if (!isNaN(amount) && amount > 0) {
+                    // Mark code as used
+                    usedCodes.add(code);
+                    
+                    // Add to wallet balance
+                    wallet.addBalance(amount);
+                    
+                    // Add transaction to history
+                    wallet.addTransaction('received', amount, code);
+                    
+                    // Show success message
+                    redeemMessage.textContent = `Successfully redeemed ${amount.toFixed(7)} EncrCoins!`;
+                    redeemMessage.className = 'success-message';
+                    redeemMessage.style.display = 'block';
+                    
+                    // Clear input
+                    codeInput.value = '';
+                } else {
+                    redeemMessage.textContent = 'Invalid transaction code format.';
+                    redeemMessage.className = 'error-message';
+                    redeemMessage.style.display = 'block';
+                }
+            } else {
+                redeemMessage.textContent = 'Invalid or expired transaction code.';
+                redeemMessage.className = 'error-message';
+                redeemMessage.style.display = 'block';
+            }
         });
 
         // Update time ago every minute
