@@ -173,7 +173,7 @@
             margin-bottom: 0.5rem;
         }
 
-        textarea, input {
+        textarea, input, select {
             width: 100%;
             padding: 0.5rem;
             border-radius: calc(var(--radius) - 0.25rem);
@@ -181,11 +181,11 @@
             background-color: var(--background);
             color: var(--foreground);
             font-size: 0.875rem;
-            resize: vertical;
         }
 
         textarea {
             min-height: 100px;
+            resize: vertical;
         }
 
         button {
@@ -473,6 +473,18 @@
                                 <label for="block-data">Block Data</label>
                                 <textarea id="block-data" placeholder="Enter data for your block...">My block data</textarea>
                             </div>
+                            <div class="form-group">
+                                <label for="memory-usage">Memory Usage</label>
+                                <select id="memory-usage">
+                                    <option value="low">Low (Slower mining, less memory)</option>
+                                    <option value="medium" selected>Medium (Balanced)</option>
+                                    <option value="high">High (Faster mining, more memory)</option>
+                                    <option value="max">Maximum (Fastest, high memory usage)</option>
+                                </select>
+                                <div class="text-xs" style="color: var(--muted-foreground); margin-top: 0.5rem;">
+                                    Adjust based on your device's capabilities. Higher settings use more memory but mine faster.
+                                </div>
+                            </div>
                             <div id="mining-progress" class="progress-container" style="display: none;">
                                 <div class="progress-header">
                                     <span>Mining Progress</span>
@@ -644,6 +656,36 @@
             });
         });
 
+        // Memory usage settings
+        const memorySettings = {
+            low: {
+                batchSize: 100,
+                reportInterval: 200,
+                initialEstimate: 5000
+            },
+            medium: {
+                batchSize: 500,
+                reportInterval: 100,
+                initialEstimate: 10000
+            },
+            high: {
+                batchSize: 1000,
+                reportInterval: 50,
+                initialEstimate: 20000
+            },
+            max: {
+                batchSize: 2000,
+                reportInterval: 25,
+                initialEstimate: 40000
+            }
+        };
+
+        // Get current memory usage setting
+        function getMemoryUsage() {
+            const select = document.getElementById('memory-usage');
+            return memorySettings[select.value];
+        }
+
         // Blockchain implementation
         class Block {
             constructor(index, timestamp, data, previousHash = '') {
@@ -670,6 +712,8 @@
 
             mineBlock(difficulty) {
                 return new Promise((resolve) => {
+                    const memoryUsage = getMemoryUsage();
+                    
                     const worker = new Worker(URL.createObjectURL(new Blob([`
                         // Simple hash function for demonstration
                         function calculateHash(index, previousHash, timestamp, data, nonce) {
@@ -690,21 +734,41 @@
                         }
                         
                         onmessage = function(e) {
-                            const { index, previousHash, timestamp, data, difficulty, estimatedHashes } = e.data;
+                            const { index, previousHash, timestamp, data, difficulty, estimatedHashes, batchSize, reportInterval } = e.data;
                             let nonce = 0;
                             let hash = '';
                             let hashesComputed = 0;
                             const startTime = Date.now();
                             
-                            while (true) {
-                                hash = calculateHash(index, previousHash, timestamp, data, nonce);
-                                hashesComputed++;
+                            // Process in batches to control memory usage
+                            function processBatch() {
+                                for (let i = 0; i < batchSize; i++) {
+                                    hash = calculateHash(index, previousHash, timestamp, data, nonce);
+                                    hashesComputed++;
+                                    
+                                    if (isValidHash(hash, difficulty)) {
+                                        const endTime = Date.now();
+                                        const elapsedSeconds = (endTime - startTime) / 1000;
+                                        const hashRate = Math.floor(hashesComputed / elapsedSeconds);
+                                        postMessage({ 
+                                            type: 'success', 
+                                            hash, 
+                                            nonce, 
+                                            hashesComputed,
+                                            hashRate,
+                                            elapsedTime: elapsedSeconds
+                                        });
+                                        return;
+                                    }
+                                    
+                                    nonce++;
+                                }
                                 
-                                // Report progress every 100 hashes
-                                if (hashesComputed % 100 === 0) {
+                                // Report progress periodically
+                                if (hashesComputed % reportInterval === 0) {
                                     const progress = Math.min(100, Math.floor((hashesComputed / estimatedHashes) * 100));
                                     const currentTime = Date.now();
-                                    const elapsedSeconds = (currentTime - startTime) / 1000;
+                                    const elapsedSeconds = (currentTime - startTime) / 1000 || 0.001;
                                     const hashRate = Math.floor(hashesComputed / elapsedSeconds);
                                     postMessage({ 
                                         type: 'progress', 
@@ -714,23 +778,12 @@
                                     });
                                 }
                                 
-                                if (isValidHash(hash, difficulty)) {
-                                    const endTime = Date.now();
-                                    const elapsedSeconds = (endTime - startTime) / 1000;
-                                    const hashRate = Math.floor(hashesComputed / elapsedSeconds);
-                                    postMessage({ 
-                                        type: 'success', 
-                                        hash, 
-                                        nonce, 
-                                        hashesComputed,
-                                        hashRate,
-                                        elapsedTime: elapsedSeconds
-                                    });
-                                    break;
-                                }
-                                
-                                nonce++;
+                                // Schedule next batch with setTimeout to prevent UI freezing
+                                setTimeout(processBatch, 0);
                             }
+                            
+                            // Start processing
+                            processBatch();
                         };
                     `], { type: 'application/javascript' })));
 
@@ -760,7 +813,9 @@
                         timestamp: this.timestamp,
                         data: this.data,
                         difficulty: difficulty,
-                        estimatedHashes: 10000 // Initial estimate
+                        estimatedHashes: memoryUsage.initialEstimate,
+                        batchSize: memoryUsage.batchSize,
+                        reportInterval: memoryUsage.reportInterval
                     });
                 });
             }
