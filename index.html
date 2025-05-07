@@ -440,6 +440,39 @@
                 transform: rotate(360deg);
             }
         }
+
+        .memory-slider-container {
+            margin-top: 0.5rem;
+        }
+
+        .memory-slider {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+
+        .memory-display {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--muted-foreground);
+        }
+
+        .memory-usage-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .memory-usage-current {
+            font-weight: bold;
+        }
+
+        .warning {
+            color: var(--error);
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+        }
     </style>
 </head>
 <body>
@@ -475,14 +508,20 @@
                             </div>
                             <div class="form-group">
                                 <label for="memory-usage">Memory Usage</label>
-                                <select id="memory-usage">
-                                    <option value="low">Low (Slower mining, less memory)</option>
-                                    <option value="medium" selected>Medium (Balanced)</option>
-                                    <option value="high">High (Faster mining, more memory)</option>
-                                    <option value="max">Maximum (Fastest, high memory usage)</option>
-                                </select>
-                                <div class="text-xs" style="color: var(--muted-foreground); margin-top: 0.5rem;">
-                                    Adjust based on your device's capabilities. Higher settings use more memory but mine faster.
+                                <div class="memory-slider-container">
+                                    <input type="range" id="memory-slider" class="memory-slider" min="100" max="32000" step="100" value="1000">
+                                    <div class="memory-display">
+                                        <span>100 MB</span>
+                                        <span id="memory-value">1000 MB (1 GB)</span>
+                                        <span>32 GB</span>
+                                    </div>
+                                    <div class="memory-usage-stats">
+                                        <span>Current Usage: <span id="current-memory-usage" class="memory-usage-current">0 MB</span></span>
+                                        <span>Target: <span id="target-memory-usage" class="memory-usage-current">1000 MB</span></span>
+                                    </div>
+                                    <div id="memory-warning" class="warning" style="display: none;">
+                                        Warning: Very high memory usage may cause browser instability or crashes.
+                                    </div>
                                 </div>
                             </div>
                             <div id="mining-progress" class="progress-container" style="display: none;">
@@ -656,34 +695,135 @@
             });
         });
 
-        // Memory usage settings
-        const memorySettings = {
-            low: {
-                batchSize: 100,
-                reportInterval: 200,
-                initialEstimate: 5000
-            },
-            medium: {
+        // Memory usage slider
+        const memorySlider = document.getElementById('memory-slider');
+        const memoryValue = document.getElementById('memory-value');
+        const targetMemoryUsage = document.getElementById('target-memory-usage');
+        const currentMemoryUsage = document.getElementById('current-memory-usage');
+        const memoryWarning = document.getElementById('memory-warning');
+        
+        // Memory buffers to maintain the desired memory usage
+        let memoryBuffers = [];
+        let targetMemoryMB = parseInt(memorySlider.value);
+        
+        // Update memory value display when slider changes
+        memorySlider.addEventListener('input', () => {
+            const value = parseInt(memorySlider.value);
+            targetMemoryMB = value;
+            
+            let displayValue = '';
+            if (value >= 1000) {
+                displayValue = `${value} MB (${(value / 1000).toFixed(1)} GB)`;
+            } else {
+                displayValue = `${value} MB`;
+            }
+            
+            memoryValue.textContent = displayValue;
+            targetMemoryUsage.textContent = `${value} MB`;
+            
+            // Show warning for high memory values
+            if (value > 8000) {
+                memoryWarning.style.display = 'block';
+            } else {
+                memoryWarning.style.display = 'none';
+            }
+        });
+
+        // Function to allocate memory
+        function allocateMemory(targetMB) {
+            try {
+                // Clear existing buffers
+                memoryBuffers = [];
+                
+                // Calculate how many MB we need to allocate
+                const mbToAllocate = targetMB;
+                
+                // Each buffer will be 100MB
+                const bufferSizeMB = 100;
+                const numBuffers = Math.floor(mbToAllocate / bufferSizeMB);
+                
+                // Create buffers of the specified size
+                for (let i = 0; i < numBuffers; i++) {
+                    try {
+                        // Create a buffer of approximately 100MB (1MB = 1024*1024 bytes)
+                        // Each Float64Array element is 8 bytes
+                        const bufferSize = Math.floor((bufferSizeMB * 1024 * 1024) / 8);
+                        const buffer = new Float64Array(bufferSize);
+                        
+                        // Fill the buffer with random data to ensure it's actually allocated
+                        for (let j = 0; j < buffer.length; j += 1024) {
+                            buffer[j] = Math.random();
+                        }
+                        
+                        memoryBuffers.push(buffer);
+                    } catch (e) {
+                        console.error('Memory allocation failed:', e);
+                        break;
+                    }
+                }
+                
+                // Update current memory usage display
+                updateMemoryUsageDisplay();
+                
+                return memoryBuffers.length * bufferSizeMB;
+            } catch (e) {
+                console.error('Memory allocation error:', e);
+                return 0;
+            }
+        }
+
+        // Function to update memory usage display
+        function updateMemoryUsageDisplay() {
+            // Calculate approximate memory usage
+            const usageMB = memoryBuffers.length * 100;
+            currentMemoryUsage.textContent = `${usageMB} MB`;
+        }
+
+        // Function to get performance settings based on memory usage
+        function getPerformanceSettings() {
+            // Base settings
+            const settings = {
                 batchSize: 500,
                 reportInterval: 100,
                 initialEstimate: 10000
-            },
-            high: {
-                batchSize: 1000,
-                reportInterval: 50,
-                initialEstimate: 20000
-            },
-            max: {
-                batchSize: 2000,
-                reportInterval: 25,
-                initialEstimate: 40000
+            };
+            
+            // Scale settings based on allocated memory
+            const allocatedMB = memoryBuffers.length * 100;
+            
+            if (allocatedMB >= 8000) {
+                // Ultra high performance for 8GB+
+                settings.batchSize = 10000;
+                settings.reportInterval = 10;
+                settings.initialEstimate = 100000;
+            } else if (allocatedMB >= 4000) {
+                // Very high performance for 4GB+
+                settings.batchSize = 5000;
+                settings.reportInterval = 20;
+                settings.initialEstimate = 80000;
+            } else if (allocatedMB >= 2000) {
+                // High performance for 2GB+
+                settings.batchSize = 3000;
+                settings.reportInterval = 30;
+                settings.initialEstimate = 60000;
+            } else if (allocatedMB >= 1000) {
+                // Good performance for 1GB+
+                settings.batchSize = 2000;
+                settings.reportInterval = 50;
+                settings.initialEstimate = 40000;
+            } else if (allocatedMB >= 500) {
+                // Medium performance for 500MB+
+                settings.batchSize = 1000;
+                settings.reportInterval = 75;
+                settings.initialEstimate = 20000;
+            } else {
+                // Base performance for <500MB
+                settings.batchSize = 500;
+                settings.reportInterval = 100;
+                settings.initialEstimate = 10000;
             }
-        };
-
-        // Get current memory usage setting
-        function getMemoryUsage() {
-            const select = document.getElementById('memory-usage');
-            return memorySettings[select.value];
+            
+            return settings;
         }
 
         // Blockchain implementation
@@ -712,7 +852,12 @@
 
             mineBlock(difficulty) {
                 return new Promise((resolve) => {
-                    const memoryUsage = getMemoryUsage();
+                    // Allocate memory before mining
+                    const allocatedMB = allocateMemory(targetMemoryMB);
+                    console.log(`Allocated approximately ${allocatedMB} MB of memory`);
+                    
+                    // Get performance settings based on allocated memory
+                    const settings = getPerformanceSettings();
                     
                     const worker = new Worker(URL.createObjectURL(new Blob([`
                         // Simple hash function for demonstration
@@ -734,13 +879,13 @@
                         }
                         
                         onmessage = function(e) {
-                            const { index, previousHash, timestamp, data, difficulty, estimatedHashes, batchSize, reportInterval } = e.data;
+                            const { index, previousHash, timestamp, data, difficulty, batchSize, reportInterval } = e.data;
                             let nonce = 0;
                             let hash = '';
                             let hashesComputed = 0;
                             const startTime = Date.now();
                             
-                            // Process in batches to control memory usage
+                            // Process in batches to control memory usage and CPU intensity
                             function processBatch() {
                                 for (let i = 0; i < batchSize; i++) {
                                     hash = calculateHash(index, previousHash, timestamp, data, nonce);
@@ -766,14 +911,12 @@
                                 
                                 // Report progress periodically
                                 if (hashesComputed % reportInterval === 0) {
-                                    const progress = Math.min(100, Math.floor((hashesComputed / estimatedHashes) * 100));
                                     const currentTime = Date.now();
                                     const elapsedSeconds = (currentTime - startTime) / 1000 || 0.001;
                                     const hashRate = Math.floor(hashesComputed / elapsedSeconds);
                                     postMessage({ 
                                         type: 'progress', 
                                         hashRate,
-                                        progress,
                                         hashesComputed
                                     });
                                 }
@@ -788,10 +931,11 @@
                     `], { type: 'application/javascript' })));
 
                     worker.onmessage = (e) => {
-                        const { type, hash, nonce, hashRate, progress, hashesComputed } = e.data;
+                        const { type, hash, nonce, hashRate, hashesComputed } = e.data;
                         
                         if (type === 'progress') {
                             // Update UI with progress
+                            const progress = Math.min(100, Math.floor((hashesComputed / settings.initialEstimate) * 100));
                             document.getElementById('progress-percentage').textContent = `${progress}%`;
                             document.querySelector('.progress-bar').style.width = `${progress}%`;
                             document.getElementById('stats-hashrate').textContent = hashRate.toLocaleString();
@@ -803,6 +947,11 @@
                             worker.terminate();
                             this.hash = hash;
                             this.nonce = nonce;
+                            
+                            // Clear memory buffers after mining is complete
+                            memoryBuffers = [];
+                            updateMemoryUsageDisplay();
+                            
                             resolve({ hash, nonce, hashRate, hashesComputed });
                         }
                     };
@@ -813,9 +962,8 @@
                         timestamp: this.timestamp,
                         data: this.data,
                         difficulty: difficulty,
-                        estimatedHashes: memoryUsage.initialEstimate,
-                        batchSize: memoryUsage.batchSize,
-                        reportInterval: memoryUsage.reportInterval
+                        batchSize: settings.batchSize,
+                        reportInterval: settings.reportInterval
                     });
                 });
             }
@@ -991,6 +1139,20 @@
         // Initialize blockchain
         const blockchain = new Blockchain();
         blockchain.updateUI();
+
+        // Monitor memory usage
+        function updateMemoryStats() {
+            if (window.performance && window.performance.memory) {
+                const memoryInfo = window.performance.memory;
+                const usedHeapSizeMB = Math.round(memoryInfo.usedJSHeapSize / (1024 * 1024));
+                currentMemoryUsage.textContent = `${usedHeapSizeMB} MB`;
+            }
+        }
+
+        // Update memory stats periodically if the browser supports it
+        if (window.performance && window.performance.memory) {
+            setInterval(updateMemoryStats, 1000);
+        }
 
         // Mine button click handler
         document.getElementById('mine-button').addEventListener('click', async () => {
