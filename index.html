@@ -563,6 +563,39 @@
             font-size: 0.875rem;
             margin-top: 0.5rem;
         }
+
+        .contract-info {
+            margin-top: 1rem;
+            border-top: 1px solid var(--border);
+            padding-top: 1rem;
+        }
+
+        .contract-address {
+            font-family: monospace;
+            font-size: 0.75rem;
+            background-color: var(--muted);
+            padding: 0.5rem;
+            border-radius: calc(var(--radius) - 0.25rem);
+            word-break: break-all;
+            margin-top: 0.5rem;
+        }
+
+        .contract-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .contract-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
@@ -763,6 +796,17 @@
                         <div class="wallet-balance" id="wallet-balance">0.0000000</div>
                         <p class="text-xs">EncrCoins</p>
                         <div class="wallet-address" id="wallet-address">Generating wallet address...</div>
+                        
+                        <div class="contract-info">
+                            <div class="contract-label">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="contract-icon">
+                                    <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path>
+                                </svg>
+                                EncrCoin Contract Address
+                            </div>
+                            <div class="contract-address" id="contract-address">0x7a58c0be72be218b41c608b7fe7c5bb630736c71</div>
+                            <button id="copy-contract-button" class="copy-button" style="margin-top: 0.5rem;">Copy Contract Address</button>
+                        </div>
                     </div>
 
                     <div class="card">
@@ -847,6 +891,36 @@
                                 <p class="note-title">Security Note:</p>
                                 <p>
                                     This uses AES-256 encryption in CBC mode with PKCS5 padding. For educational purposes only.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">About Contract Address</h2>
+                            <p class="card-description">Understanding the EncrCoin contract</p>
+                        </div>
+                        <div class="card-content" style="font-size: 0.875rem;">
+                            <p>In blockchain technology, a contract address is a unique identifier for a smart contract:</p>
+                            <ul class="list" style="margin-top: 1rem;">
+                                <li>
+                                    <strong>Smart Contract:</strong> A self-executing contract with the terms directly written into code.
+                                </li>
+                                <li>
+                                    <strong>Contract Address:</strong> The unique location on the blockchain where the token's code resides.
+                                </li>
+                                <li>
+                                    <strong>Token Standard:</strong> EncrCoin follows a standard similar to ERC-20 tokens on Ethereum.
+                                </li>
+                                <li>
+                                    <strong>Verification:</strong> The contract address allows users to verify the authenticity of the token.
+                                </li>
+                            </ul>
+                            <div class="note" style="margin-top: 1rem;">
+                                <p class="note-title">Educational Note:</p>
+                                <p>
+                                    This contract address is for demonstration purposes only and does not exist on any real blockchain.
                                 </p>
                             </div>
                         </div>
@@ -1024,6 +1098,7 @@
                 this.balance = 0;
                 this.address = this.generateWalletAddress();
                 this.transactions = [];
+                this.contractAddress = "0x7a58c0be72be218b41c608b7fe7c5bb630736c71";
                 this.loadFromCookies();
             }
 
@@ -1109,6 +1184,7 @@
                 document.getElementById('wallet-balance').textContent = this.balance.toFixed(7);
                 document.getElementById('wallet-address').textContent = this.address;
                 document.getElementById('tokens-earned').textContent = this.balance.toFixed(7);
+                document.getElementById('contract-address').textContent = this.contractAddress;
             }
 
             updateTransactionHistory() {
@@ -1580,6 +1656,7 @@
 
         // Mine button click handler
         document.getElementById('mine-button').addEventListener('click', async () => {
+            const blockData = document.getElementByI  async () => {
             const blockData = document.getElementById('block-data').value.trim();
             if (!blockData) return;
             
@@ -1638,6 +1715,18 @@
                 copyButton.textContent = 'Copied!';
                 setTimeout(() => {
                     copyButton.textContent = 'Copy Code';
+                }, 2000);
+            });
+        });
+
+        // Copy contract address button click handler
+        document.getElementById('copy-contract-button').addEventListener('click', () => {
+            const contractAddress = document.getElementById('contract-address').textContent;
+            navigator.clipboard.writeText(contractAddress).then(() => {
+                const copyButton = document.getElementById('copy-contract-button');
+                copyButton.textContent = 'Copied!';
+                setTimeout(() => {
+                    copyButton.textContent = 'Copy Contract Address';
                 }, 2000);
             });
         });
